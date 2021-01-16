@@ -3,6 +3,8 @@ package com.lffm1994.osworks.api.controller;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 //import javax.persistence.EntityManager;
 //import javax.persistence.PersistenceContext;
 
@@ -16,16 +18,23 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lffm1994.osworks.domain.model.Cliente;
 import com.lffm1994.osworks.domain.repository.ClienteRepository;
+import com.lffm1994.osworks.domain.service.CadastroClienteService;
 
 
-//Anotando o controlardor para diminuir repetitividade de codigo /clientes abaixo podemos removelos dos metodos
+/*
+Anotando o controlardor para diminuir repetitividade de codigo /clientes abaixo podemos removelos dos metodos
+Conforme o crescimento da Api é necessario desvincular o controlador da regra de negocio separando as 
+responsabilidades uma opção é a entidade "regras basicas" sem interação com outras entidades
+Agora processo de negócio 
 
+Exemplo processo de exclusão e input e necessario estar no service e processo de select no controller
+
+ */
 @RestController	
 @RequestMapping("/clientes")
 public class ClienteController {
@@ -53,6 +62,11 @@ public class ClienteController {
 	
 	@Autowired
 	private ClienteRepository clienteRepository;
+	
+	// Injetar Classe cadastro de CadastroClienteService
+	@Autowired
+	private CadastroClienteService cadastroCliente;
+	
 	
 	@GetMapping
 	public List<Cliente> lista() {
@@ -93,14 +107,15 @@ public class ClienteController {
 	//Anotação ResponseStatus
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public Cliente adicionar(@RequestBody Cliente cliente) {
-		return clienteRepository.save(cliente);
+	public Cliente adicionar(@Valid @RequestBody Cliente cliente) {
+		//return clienteRepository.save(cliente);
+		return cadastroCliente.salvar(cliente);
 		
 	}
 	
 	//@PathVariable para vincular ao parametro clienteId
 	@PutMapping("/{clienteId}")
-	public ResponseEntity<Cliente> atualizar(@PathVariable Long clienteId, 
+	public ResponseEntity<Cliente> atualizar(@Valid @PathVariable Long clienteId, 
 			@RequestBody Cliente cliente) {
 		
 		//negativa se procurar o id do cliente e não achar
@@ -110,7 +125,7 @@ public class ClienteController {
 		
 		//Atualizar o cliente
 		cliente.setId(clienteId);
-		cliente = clienteRepository.save(cliente);
+		cliente = cadastroCliente.salvar(cliente);
 		
 		return ResponseEntity.ok(cliente);
 		
@@ -125,8 +140,10 @@ public class ClienteController {
 		if(!clienteRepository.existsById(clienteId)) {
 			return ResponseEntity.notFound().build();
 		}
-		//remoção do codigo do cliente
-		clienteRepository.deleteById(clienteId);
+		//remoção do codigo do cliente 
+		//clienteRepository.deleteById(clienteId);
+		cadastroCliente.excluir(clienteId);
+		
 		return ResponseEntity.noContent().build();
 	}
 

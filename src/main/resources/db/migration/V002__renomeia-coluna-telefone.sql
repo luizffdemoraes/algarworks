@@ -1,1 +1,1 @@
-alter table cliente rename column telefone to fone;
+ALTER TABLE cliente CHANGE telefone fone varchar(20) not null;
