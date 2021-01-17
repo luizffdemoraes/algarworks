@@ -3,6 +3,7 @@ package com.lffm1994.osworks.domain.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.lffm1994.osworks.domain.exception.NegocioException;
 import com.lffm1994.osworks.domain.model.Cliente;
 import com.lffm1994.osworks.domain.repository.ClienteRepository;
 
